@@ -1,0 +1,150 @@
+---
+title: "Ramen_Ratings"
+author: "Jolomi Akperi"
+date: "2022-08-23"
+output: github_document
+---
+
+I'm so excited about this project because I absolutely LOVE ramen!!! For this project, I want to carry out some analysis to find out the top ramen brands, bottom ramen brands, countries with the most ramen brands, and the customer's favorite flavor.
+
+I'll begin with setting my working directory and reading the ramen data set into this markdown. (This is a step I can never forget because when I was new to markdowns, It just never occured to me to load the data set unto markdown again even though it was present in my working environment. I kept getting errors until in consulted a friend who explained what the problem was.)
+
+
+
+```{r}
+setwd("C:/Users/JOLOMI AKPERI/OneDrive/Documents/my_projects")                    
+```
+
+```{r}
+ramen_ratings <- read.csv('ramen-ratings.csv')
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r , include=FALSE}
+knitr::opts_chunk$set(error = TRUE)
+```
+
+```{r , include=FALSE}
+knitr::opts_chunk$set(message = FALSE)
+```
+
+#### Installing Packages
+
+```{r , results = 'hide',error=TRUE, message=FALSE}
+install.packages("tidyverse", repos = "http://cran.us.r-project.org")
+library(tidyverse)
+```
+
+```{r , results = 'hide',error=TRUE, message=FALSE}
+install.packages("janitor", repos = "http://cran.us.r-project.org")
+library(janitor)
+```
+
+```{r , results = 'hide', error=TRUE,  message=FALSE, warning=FALSE}
+install.packages("dplyr", repos = "http://cran.us.r-project.org")
+library(dplyr)
+```
+
+### Cleaning the Data
+
+Now let's take a look at the data to see if it needs any cleaning. (Trust me, you don't want to skip this step. Dirty data mostly produces inaccurate results. Now don't want that do we?)
+
+```{r}
+str(ramen_ratings)
+```
+
+The first thing I observed is that the column names begin with capital letters. There's absolutely no problem with that, but personally, I prefer it when the column names I'm working with are in lowercase all through. Let's fix that real quick.
+
+```{r}
+ramen_ratings <- (clean_names(ramen_ratings))
+```
+
+Now, lets change the data type of the stars column to numeric
+
+```{r , warning=FALSE}
+ramen_ratings$stars <- as.numeric(ramen_ratings$stars)
+```
+
+```{r}
+str(ramen_ratings)
+```
+
+Lets be sure we have no missing data
+
+```{r}
+ramen_ratings %>% is.na() %>% colSums() %>% sort(decreasing=TRUE)
+
+```
+
+There are 3 missing values in the stars column. Let's fix that.
+
+```{r}
+ramen_ratings <- ramen_ratings %>% 
+  na.omit()
+```
+
+```{r}
+ramen_ratings %>% is.na() %>% colSums() %>% sort(decreasing=TRUE)
+
+```
+
+PERFECT!
+
+Since I have not observed any other anomalies, we'll move on to the analysis.
+
+### Analysing Ramen Ratings
+
+#### The Top Ramen Brands
+
+Firstly, I will love to know the highest ramen rated brands so I'll to know which ones to look out for the next time I visit the store!
+
+```{r}
+ramen_ratings %>%
+  select(brand,country,stars) %>%
+  group_by(brand,stars) %>%
+  summarise(count=n()) %>%
+  filter(stars>=4.5) %>%
+  filter(count>5) %>%
+  arrange(desc(count))
+```
+
+The above brands are the definatly the ones to look out for as they have the highest ratings.
+
+#### Customers' Favourite Ramen Flavors
+
+It'll be nice to know the variety of ramen flavors that have the highest ratings. To achieve this, I selected the columns I felt were applicable which are: brand, variety, and the number stars it received. I want to see the customers that rated the flavors over 4.5 to show that they really, really enjoyed that particular variety.
+
+```{r}
+ramen_ratings %>%
+  select(brand,variety,stars) %>%
+  group_by(variety) %>%
+  filter(stars>="4.5") %>%
+  count(variety) %>%
+  filter(n>1) %>%
+  arrange(desc(n))
+```
+
+Yakisoba had the highest number of ratings from 4.5 and above.This doesn't necessarily mean it is the customers' favorite,but it's certain that it is really enjoyed by customers.
+
+#### Country With the most Ramen Brands
+
+Finally, I want to find out the country that produces the most ramen so I can be sure to visit during my next vacation!
+
+```{r}
+Country_ramen <- ramen_ratings %>% 
+  select(variety,country) %>%
+  group_by(country) %>%
+  count(country) %>%
+  arrange(desc(n))
+Country_ramen
+```
+
+I guess I'm heading to Japan!!
+
+### Conclusion
+
+This very data set was very interesting to me and I really enjoyed working with it. I actually find it interesting that the USA has the second highest number or ramen brands and the highest rated brand (Nissin) is from the USA. Thats crazy.
+
